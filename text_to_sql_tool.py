@@ -1,5 +1,3 @@
-# text_to_sql_tool.py
-
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 from typing import Type, Any
@@ -34,7 +32,28 @@ class TextToSQLTool(BaseTool):
                 if result.returns_rows:
                     rows = result.fetchall()
                     cols = result.keys()
-                    return str([dict(zip(cols, row)) for row in rows])
+
+                    if not rows:
+                        return "No results found."
+
+                    # Calculate max width for each column
+                    col_widths = [len(col) for col in cols]
+                    for row in rows:
+                        for i, item in enumerate(row):
+                            col_widths[i] = max(col_widths[i], len(str(item)))
+
+                    # Build header
+                    header = " | ".join(col.ljust(col_widths[i]) for i, col in enumerate(cols))
+                    divider = "-+-".join("-" * col_widths[i] for i in range(len(cols)))
+
+                    # Build rows
+                    data_rows = [
+                        " | ".join(str(item).ljust(col_widths[i]) for i, item in enumerate(row))
+                        for row in rows
+                    ]
+
+                    output = f"{header}\n{divider}\n" + "\n".join(data_rows)
+                    return output.strip()
                 return "✅ SQL executed successfully."
         except Exception as e:
             return f"❌ Failed: {e}"

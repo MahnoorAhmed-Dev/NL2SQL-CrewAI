@@ -23,22 +23,19 @@ researcher = Agent(
     allow_delegation=False
 )
 
-# Task
-task = Task(
-    description="give a list of all the industries",
-    expected_output="List of all industries",
-    agent=researcher
-)
+def run_query_with_the_crew(user_query:str)->str:
+        # Task
+    task = Task(
+        description=user_query,
+        expected_output="Answer to the query",
+        agent=researcher
+    )
 
 # Crew
-crew = Crew(
-    agents=[researcher],
-    tasks=[task],
-    verbose=True
-)
+    crew = Crew(
+        agents=[researcher],
+        tasks=[task],
+        verbose=False
+    )
 
-# Run it
-if __name__ == "__main__":
-    print("🚀 Running Crew...")
-    result = crew.kickoff()
-    print("✅ Result:\n", result)
+    return crew.kickoff()
